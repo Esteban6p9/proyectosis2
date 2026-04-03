@@ -1,12 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 
-// ================================================================
-// INTEGRANTE 5 — Estilo: Art Déco / Dorado Lujoso
-// Tabla MySQL: pintura_arte (id, item, costo_bases, tiempo)
-// API: GET /api/items  |  POST /api/items  |  DELETE /api/items/[id]
-// ================================================================
-
 interface Item {
   id: number;
   item: string;
@@ -28,9 +22,19 @@ export default function Integrante5() {
   const [success, setSuccess] = useState("");
 
   const fetchItems = async () => {
-    const res = await fetch("/api/items");
-    const data = await res.json();
-    setItems(data);
+    try {
+      const res = await fetch("/api/items");
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setItems(data);
+      } else {
+        console.error("La API devolvió un error:", data);
+        setItems([]);
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error);
+      setItems([]);
+    }
   };
 
   useEffect(() => { fetchItems(); }, []);
@@ -50,13 +54,13 @@ export default function Integrante5() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Error al registrar."); }
-      else { setSuccess("Técnica incorporada al repertorio."); setForm({ item: "", costo_bases: "", tiempo: "" }); await fetchItems(); }
-    } catch { setError("Error de conexión con el servidor."); }
+      else { setSuccess("✓ Técnica registrada correctamente."); setForm({ item: "", costo_bases: "", tiempo: "" }); await fetchItems(); }
+    } catch { setError("Error de conexión."); }
     finally { setLoading(false); }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("¿Retirar esta técnica del repertorio?")) return;
+    if (!confirm("¿Eliminar esta técnica?")) return;
     await fetch(`/api/items/${id}`, { method: "DELETE" });
     await fetchItems();
   };

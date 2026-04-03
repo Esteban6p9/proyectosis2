@@ -28,9 +28,19 @@ export default function Integrante2() {
   const [success, setSuccess] = useState("");
 
   const fetchItems = async () => {
-    const res = await fetch("/api/items");
-    const data = await res.json();
-    setItems(data);
+    try {
+      const res = await fetch("/api/items");
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setItems(data);
+      } else {
+        console.error("La API devolvió un error:", data);
+        setItems([]);
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error);
+      setItems([]);
+    }
   };
 
   useEffect(() => { fetchItems(); }, []);
@@ -39,7 +49,8 @@ export default function Integrante2() {
     e.preventDefault();
     setError(""); setSuccess("");
     if (!form.item || !form.costo_bases || !form.tiempo) {
-      setError("ERROR: Campos incompletos."); return;
+      setError("Todos los campos son obligatorios.");
+      return;
     }
     setLoading(true);
     try {
@@ -49,14 +60,14 @@ export default function Integrante2() {
         body: JSON.stringify({ item: form.item, costo_bases: Number(form.costo_bases), tiempo: Number(form.tiempo) }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(`ERROR: ${data.error || "Fallo en registro."}`); }
-      else { setSuccess(">> REGISTRO EXITOSO"); setForm({ item: "", costo_bases: "", tiempo: "" }); await fetchItems(); }
-    } catch { setError("ERROR: Sin conexión."); }
+      if (!res.ok) { setError(data.error || "Error al registrar."); }
+      else { setSuccess("✓ Técnica registrada correctamente."); setForm({ item: "", costo_bases: "", tiempo: "" }); await fetchItems(); }
+    } catch { setError("Error de conexión."); }
     finally { setLoading(false); }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("¿Eliminar registro?")) return;
+    if (!confirm("¿Eliminar esta técnica?")) return;
     await fetch(`/api/items/${id}`, { method: "DELETE" });
     await fetchItems();
   };

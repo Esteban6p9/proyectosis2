@@ -28,6 +28,7 @@ export async function POST(request: Request) {
     if (existingItems.length > 0) {
       return NextResponse.json({ error: 'Esta técnica ya ha sido ingresada.' }, { status: 400 });
     }
+
     const [result] = await pool.query(
       'INSERT INTO pintura_arte (item, costo_bases, tiempo) VALUES (?, ?, ?)',
       [item, costo_bases, tiempo]

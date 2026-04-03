@@ -28,9 +28,20 @@ export default function Integrante1() {
   const [success, setSuccess] = useState("");
 
   const fetchItems = async () => {
-    const res = await fetch("/api/items");
-    const data = await res.json();
-    setItems(data);
+    try {
+      const res = await fetch("/api/items");
+      const data = await res.json();
+      // Verificamos si realmente nos devolvió una lista (Array)
+      if (Array.isArray(data)) {
+        setItems(data);
+      } else {
+        console.error("La API devolvió un error:", data);
+        setItems([]); // Forzamos una lista vacía para que no explote
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error);
+      setItems([]);
+    }
   };
 
   useEffect(() => { fetchItems(); }, []);
@@ -59,9 +70,8 @@ export default function Integrante1() {
   const handleDelete = async (id: number) => {
     if (!confirm("¿Eliminar esta técnica?")) return;
     await fetch(`/api/items/${id}`, { method: "DELETE" });
-    await fetchItems();
+    await fetchItems(); // <-- ¡ESTO ACTUALIZA LA PÁGINA!
   };
-
   return (
     <>
       <style>{`

@@ -1,12 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 
-// ================================================================
-// INTEGRANTE 4 — Estilo: Brutalist / Industrial
-// Tabla MySQL: pintura_arte (id, item, costo_bases, tiempo)
-// API: GET /api/items  |  POST /api/items  |  DELETE /api/items/[id]
-// ================================================================
-
 interface Item {
   id: number;
   item: string;
@@ -20,7 +14,7 @@ function formatTiempo(minutos: number): string {
   return `${horas} hora${horas !== 1 ? "s" : ""}`;
 }
 
-export default function Integrante4() {
+export default function Integrante1() {
   const [items, setItems] = useState<Item[]>([]);
   const [form, setForm] = useState({ item: "", costo_bases: "", tiempo: "" });
   const [loading, setLoading] = useState(false);
@@ -28,9 +22,12 @@ export default function Integrante4() {
   const [success, setSuccess] = useState("");
 
   const fetchItems = async () => {
-    const res = await fetch("/api/items");
-    const data = await res.json();
-    setItems(data);
+    try {
+      const res = await fetch("/api/items");
+      const data = await res.json();
+      if (Array.isArray(data)) { setItems(data); }
+      else { console.error("La API devolvió un error:", data); setItems([]); }
+    } catch (error) { console.error("Error de conexión:", error); setItems([]); }
   };
 
   useEffect(() => { fetchItems(); }, []);
@@ -39,7 +36,8 @@ export default function Integrante4() {
     e.preventDefault();
     setError(""); setSuccess("");
     if (!form.item || !form.costo_bases || !form.tiempo) {
-      setError("CAMPOS INCOMPLETOS."); return;
+      setError("Todos los campos son obligatorios.");
+      return;
     }
     setLoading(true);
     try {
@@ -49,105 +47,129 @@ export default function Integrante4() {
         body: JSON.stringify({ item: form.item, costo_bases: Number(form.costo_bases), tiempo: Number(form.tiempo) }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error?.toUpperCase() || "ERROR EN REGISTRO."); }
-      else { setSuccess("GUARDADO CORRECTAMENTE."); setForm({ item: "", costo_bases: "", tiempo: "" }); await fetchItems(); }
-    } catch { setError("ERROR DE SERVIDOR."); }
+      if (!res.ok) { setError(data.error || "Error al registrar."); }
+      else { setSuccess("✦ Técnica registrada correctamente."); setForm({ item: "", costo_bases: "", tiempo: "" }); await fetchItems(); }
+    } catch { setError("Error de conexión."); }
     finally { setLoading(false); }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("¿Eliminar?")) return;
+    if (!confirm("¿Eliminar esta técnica?")) return;
     await fetch(`/api/items/${id}`, { method: "DELETE" });
     await fetchItems();
   };
 
   return (
     <>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,700;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        .pg { min-height: 100vh; background: #e8e4dc; font-family: 'Space Mono', monospace; color: #1a1a1a; }
-        .top-bar { background: #1a1a1a; color: #e8e4dc; padding: 1.2rem 3rem; display: flex; align-items: center; justify-content: space-between; }
-        .top-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 0.08em; }
-        .top-right { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: #888; }
-        .body { padding: 3rem; display: grid; grid-template-columns: 380px 1fr; gap: 3rem; }
-        .form-block { }
-        .block-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.1em; padding: 0.6rem 0; border-top: 4px solid #1a1a1a; border-bottom: 2px solid #1a1a1a; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
-        .block-title span { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: #888; letter-spacing: 0.15em; }
-        .field { margin-bottom: 1.5rem; }
-        .label { display: block; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: #666; margin-bottom: 0.5rem; }
-        .input { width: 100%; background: #fff; border: 2px solid #1a1a1a; padding: 0.8rem; font-family: 'Space Mono', monospace; font-size: 0.9rem; color: #1a1a1a; outline: none; transition: background 0.15s; }
-        .input:focus { background: #fff9e6; }
-        .submit-btn { width: 100%; padding: 1rem; background: #1a1a1a; color: #e8e4dc; border: none; font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 0.15em; cursor: pointer; transition: all 0.15s; margin-top: 0.5rem; }
-        .submit-btn:hover { background: #d45a00; }
+
+        .pg { min-height: 100vh; background: linear-gradient(160deg, #fdf6f9 0%, #f9f0f8 50%, #f3eefa 100%); font-family: 'Jost', sans-serif; color: #3a2a3e; }
+        .top-stripe { height: 4px; background: linear-gradient(90deg, #e8a0c0, #c9a0e8, #e8a0c0); }
+
+        .hero { padding: 3.5rem 2rem 2.5rem; text-align: center; border-bottom: 1px solid #edd8ee; }
+        .hero-deco { font-size: 1rem; letter-spacing: 0.6em; color: #d8a0c8; margin-bottom: 1rem; }
+        .hero-title { font-family: 'Nunito', sans-serif; font-size: 4rem; font-weight: 700; line-height: 1.1; color: #3a2a3e; letter-spacing: -0.01em; }
+        .hero-title em { font-style: italic; color: #c46fa0; font-weight: 300; }
+        .hero-sub { margin-top: 0.8rem; font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: #c090c0; }
+
+        .form-section { max-width: 700px; margin: 0 auto; padding: 3rem 2rem 2rem; }
+        .section-label { font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: #b080a8; display: flex; align-items: center; gap: 0.8rem; margin-bottom: 2rem; }
+        .section-label::before, .section-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, #e8c0e0, transparent); }
+
+        .fields-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem; }
+        .field { display: flex; flex-direction: column; }
+        .lbl { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: #b080a8; margin-bottom: 0.45rem; }
+        .inp { border: none; border-bottom: 1.5px solid #e0c0d8; background: transparent; padding: 0.5rem 0; font-family: 'Jost', sans-serif; font-size: 1rem; color: #3a2a3e; outline: none; transition: border-color 0.25s; }
+        .inp:focus { border-bottom-color: #c46fa0; }
+
+        .form-footer { display: flex; align-items: center; justify-content: center; gap: 1.5rem; flex-wrap: wrap; }
+        .submit-btn { padding: 0.85rem 2.5rem; background: linear-gradient(135deg, #d490b8, #b870c0); color: #fff; border: none; font-family: 'Jost', sans-serif; font-size: 0.72rem; letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer; border-radius: 30px; transition: opacity 0.2s; }
+        .submit-btn:hover { opacity: 0.88; }
         .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .msg { margin-top: 1rem; padding: 0.7rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; border-left: 4px solid; }
-        .msg.ok { border-color: #3a7a3a; color: #3a7a3a; background: #f0f5ea; }
-        .msg.err { border-color: #d40000; color: #d40000; background: #fdf0f0; }
-        .table-area { }
+        .msg { padding: 0.6rem 1.2rem; font-size: 0.83rem; border-radius: 20px; }
+        .msg.ok { color: #8040a0; background: #f8e8fc; border: 1px solid #e0b8f0; }
+        .msg.err { color: #a04040; background: #fdf0f0; border: 1px solid #f0c0c0; }
+
+        .table-section { max-width: 900px; margin: 0 auto; padding: 0 2rem 4rem; }
+        .count-line { font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: #c090c0; text-align: center; margin-bottom: 1.5rem; }
+        .table-wrap { background: #fff8fc; border: 1px solid #edd8ee; border-radius: 16px; overflow: hidden; }
+
         table { width: 100%; border-collapse: collapse; }
-        thead tr { border-bottom: 4px solid #1a1a1a; }
-        thead th { font-size: 0.62rem; letter-spacing: 0.2em; font-weight: 700; padding: 0 1rem 0.8rem 0; text-align: left; text-transform: uppercase; }
-        tbody tr { border-bottom: 2px solid #d0ccc4; transition: background 0.1s; }
-        tbody tr:hover { background: #fff; }
-        td { padding: 1rem 1rem 1rem 0; font-size: 0.88rem; }
-        .td-idx { color: #aaa; font-size: 0.75rem; width: 40px; }
-        .td-name { font-weight: 700; font-size: 1rem; }
-        .badge { display: inline-block; background: #1a1a1a; color: #e8e4dc; padding: 0.15rem 0.6rem; font-size: 0.72rem; letter-spacing: 0.08em; }
-        .del-btn { background: transparent; border: 2px solid #1a1a1a; color: #1a1a1a; padding: 0.3rem 0.8rem; font-family: 'Space Mono', monospace; font-size: 0.72rem; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: all 0.15s; }
-        .del-btn:hover { background: #d40000; border-color: #d40000; color: #fff; }
-        .empty { padding: 3rem; text-align: center; color: #aaa; font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; }
-        .count { font-size: 0.7rem; letter-spacing: 0.15em; color: #888; margin-bottom: 0.5rem; }
+        thead tr { border-bottom: 1.5px solid #e8c0e0; background: #fdf0f8; }
+        thead th { font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: #b080a8; padding: 1rem 1.2rem; text-align: left; font-weight: 400; }
+        tbody tr { border-bottom: 1px solid #f4e4f4; transition: background 0.15s; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: #fdf0fa; }
+        td { padding: 1rem 1.2rem; font-size: 0.95rem; }
+
+        .td-num { color: #d0a0c8; width: 40px; font-size: 0.85rem; }
+        .td-name { font-family: 'Nunito', sans-serif; font-size: 1.05rem; font-weight: 600; color: #5a3060; }
+        .badge { display: inline-block; padding: 0.2rem 0.8rem; background: #fce8f3; color: #c05888; font-size: 0.75rem; border-radius: 20px; border: 1px solid #f0c0d8; }
+        .del-btn { background: none; border: 1px solid #e0c0d8; color: #c080b0; padding: 0.28rem 0.85rem; font-family: 'Jost', sans-serif; font-size: 0.75rem; cursor: pointer; border-radius: 20px; transition: all 0.2s; }
+        .del-btn:hover { border-color: #e080a0; color: #b04070; background: #fdf0f5; }
+        .empty { text-align: center; padding: 3.5rem; color: #d0a0c8; font-style: italic; font-size: 1.1rem; font-family: 'Nunito', sans-serif; }
       `}</style>
+
       <div className="pg">
-        <div className="top-bar">
-          <div className="top-title">Pintura & Arte</div>
-          <div className="top-right">Gestión de técnicas artísticas</div>
+        <div className="top-stripe" />
+
+        <div className="hero">
+          <div className="hero-deco">✦ ✦ ✦</div>
+          <div className="hero-title">Pintura <em>&</em> Arte</div>
+          <div className="hero-sub">Gestión de técnicas artísticas</div>
         </div>
-        <div className="body">
-          <div className="form-block">
-            <div className="block-title">Nueva Técnica <span>FORMULARIO</span></div>
-            <form onSubmit={handleSubmit}>
+
+        <div className="form-section">
+          <div className="section-label">Nueva Técnica</div>
+          <form onSubmit={handleSubmit}>
+            <div className="fields-grid">
               <div className="field">
-                <label className="label">Técnica / Ítem</label>
-                <input className="input" placeholder="Ej: Óleo" value={form.item}
+                <label className="lbl">Técnica / Ítem</label>
+                <input className="inp" placeholder="Ej: Óleo" value={form.item}
                   onChange={e => setForm({ ...form, item: e.target.value })} />
               </div>
               <div className="field">
-                <label className="label">Costo en bases</label>
-                <input className="input" type="number" placeholder="Ej: 20" value={form.costo_bases}
+                <label className="lbl">Costo en bases</label>
+                <input className="inp" type="number" placeholder="Ej: 20" value={form.costo_bases}
                   onChange={e => setForm({ ...form, costo_bases: e.target.value })} />
               </div>
               <div className="field">
-                <label className="label">Tiempo (minutos)</label>
-                <input className="input" type="number" placeholder="Ej: 300" value={form.tiempo}
+                <label className="lbl">Tiempo (minutos)</label>
+                <input className="inp" type="number" placeholder="Ej: 300" value={form.tiempo}
                   onChange={e => setForm({ ...form, tiempo: e.target.value })} />
               </div>
+            </div>
+            <div className="form-footer">
               {error && <div className="msg err">{error}</div>}
               {success && <div className="msg ok">{success}</div>}
               <button className="submit-btn" type="submit" disabled={loading}>
-                {loading ? "GUARDANDO" : "REGISTRAR"}
+                {loading ? "Registrando..." : "✦ Registrar técnica"}
               </button>
-            </form>
-          </div>
-          <div className="table-area">
-            <div className="block-title">Lista de Técnicas <span className="count">{items.length} REGISTROS</span></div>
+            </div>
+          </form>
+        </div>
+
+        <div className="table-section">
+          <div className="section-label">Catálogo</div>
+          <div className="count-line">{items.length} técnica{items.length !== 1 ? "s" : ""} registradas</div>
+          <div className="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>Técnica</th>
-                  <th>Costo en bases</th>
-                  <th>Tiempo</th>
-                  <th>Acción</th>
+                  <th>#</th><th>Técnica</th><th>Costo en bases</th><th>Tiempo de elaboración</th><th>Acción</th>
                 </tr>
               </thead>
               <tbody>
                 {items.length === 0
-                  ? <tr><td colSpan={5} className="empty">SIN REGISTROS</td></tr>
+                  ? <tr><td colSpan={5} className="empty">No hay técnicas registradas aún ✦</td></tr>
                   : items.map((it, i) => (
                     <tr key={it.id}>
-                      <td className="td-idx">{i + 1}</td>
+                      <td className="td-num">{i + 1}</td>
                       <td className="td-name">{it.item}</td>
                       <td><span className="badge">{it.costo_bases} base{it.costo_bases !== 1 ? "s" : ""}</span></td>
                       <td>{formatTiempo(it.tiempo)}</td>
